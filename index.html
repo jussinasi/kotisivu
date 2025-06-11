@@ -88,7 +88,7 @@
   <footer>&copy; 2025 Kotisivupalvelu / Mati Adamas</footer>
 
   <script>
-    const API_KEY = "AIzaSyA-J7vI7IVKsgF4JVJY6OakkP2HOA0Rnho";
+    const API_KEY = "AIzaSyA-J7vI7IVKsgF4JVJY6OakkP2HOA0Rnho"; // ← oma avain tähän
 
     const palvelukuvaus = `
 Olet botti, joka vastaa kysymyksiin kotisivupalvelusta.
@@ -116,24 +116,17 @@ Puhu selkeästi, suomeksi ja ystävällisesti.`;
         ]
       };
 
-   ChatGPT sanoi:
-Kyllä! Tuo kohta näyttää melkein täysin oikein — mutta jotta se olisi täydellisen selkeä ja virheetön, suosittelen pientä siistimistä sisennyksillä. Tässä sama koodi korjattuna:
-
-✅ Oikein sisennetty ja toimiva versio:
-javascript
-Kopioi
-Muokkaa
-try {
-  const res = await fetch(
-    "https://generativelanguage.googleapis.com/v1/models/gemini-pro-1.5:generateContent?key=" + API_KEY,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(viesti)
-    }
-  );
+      try {
+        const res = await fetch(
+          "https://generativelanguage.googleapis.com/v1/models/gemini-pro-1.5:generateContent?key=" + API_KEY,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(viesti)
+          }
+        );
 
         const data = await res.json();
 
@@ -148,7 +141,6 @@ try {
 
         keskustelu.push({ role: "model", parts: [{ text: reply }] });
         if (keskustelu.length > 8) keskustelu = keskustelu.slice(-8);
-
       } catch (err) {
         msgBox.innerHTML += `<div class="msg bot"><strong>Botti:</strong> Yhteysvirhe: ${err.message}</div>`;
       }
@@ -156,4 +148,3 @@ try {
   </script>
 </body>
 </html>
-
