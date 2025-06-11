@@ -31,6 +31,32 @@
       font-size: 0.9rem;
       color: #777;
     }
+    #chatbox {
+      margin-top: 3rem;
+      padding: 1rem;
+      background: #eef;
+      border-radius: 8px;
+    }
+    #messages {
+      max-height: 300px;
+      overflow-y: auto;
+      background: #fff;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .msg { margin: 0.5rem 0; }
+    .bot { color: green; }
+    .user { color: blue; }
+    input[type="text"] {
+      width: 70%;
+      padding: 0.5rem;
+      margin-right: 0.5rem;
+    }
+    button {
+      padding: 0.5rem 1rem;
+    }
   </style>
 </head>
 <body>
@@ -50,10 +76,65 @@
     </ul>
 
     <h2>Yhteystiedot</h2>
-    <p>Sähköposti: <a href="mailto:asiakas@domain.fi">jussinasi@yahoo.com</a></p>
+    <p>Sähköposti: <a href="mailto:jussinasi@yahoo.com">jussinasi@yahoo.com</a></p>
+
+    <div id="chatbox">
+      <h3>Kysy palveluista</h3>
+      <div id="messages"></div>
+      <input type="text" id="question" placeholder="Kirjoita kysymys...">
+      <button onclick="ask()">Lähetä</button>
+    </div>
   </main>
   <footer>
     &copy; 2025 Kotisivupalvelu / Mati Adamas
   </footer>
+
+  <script>
+    const API_KEY = "YOUR_GEMINI_API_KEY"; // 🔁 Korvaa omalla Gemini-avaimellasi
+
+    const palvelukuvaus = `
+    Tarjoan verkkosivujen suunnittelua ja ylläpitoa GitHub Pagesin avulla. Sivut ovat kevyitä, nopeita ja ilmaiseksi isännöityjä. Asiakas saa halutessaan oman domainin. Lisäksi tarjoan asiakastukea ja pieniä päivityksiä kuukausihintaan.
+    Jos asiakas vaikuttaa kiinnostuneelta, ehdota hänelle yhteydenottoa sähköpostilla: jussinasi@yahoo.com.
+    Vastaa ystävällisesti ja lyhyesti.`;
+
+    let keskustelu = [];
+
+    async function ask() {
+      const input = document.getElementById("question");
+      const msgBox = document.getElementById("messages");
+      const userText = input.value.trim();
+      if (!userText) return;
+
+      msgBox.innerHTML += `<div class="msg user"><strong>Sinä:</strong> ${userText}</div>`;
+      input.value = "";
+
+      // Lisää käyttäjän viesti keskusteluun
+      keskustelu.push({ role: "user", parts: [{ text: userText }] });
+
+      const viesti = {
+        contents: [
+          { parts: [{ text: "Tietoa:\n" + palvelukuvaus }] },
+          ...keskustelu
+        ]
+      };
+
+      const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + API_KEY, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(viesti)
+      });
+
+      const data = await res.json();
+      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "En osaa vastata.";
+      msgBox.innerHTML += `<div class="msg bot"><strong>Botti:</strong> ${reply}</div>`;
+      msgBox.scrollTop = msgBox.scrollHeight;
+
+      // Lisää botti vastauksen keskusteluun muistiin
+      keskustelu.push({ role: "model", parts: [{ text: reply }] });
+
+      // Rajoita muisti 8 viestiin max (4 kysymystä + 4 vastausta)
+      if (keskustelu.length > 8) keskustelu = keskustelu.slice(-8);
+    }
+  </script>
 </body>
 </html>
